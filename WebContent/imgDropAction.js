@@ -13,6 +13,8 @@
 	var cont = null;
 	// FileReaderインターフェースオブジェクト
 	var reader = null;
+	// ドロップ画像の表示領域要素
+	var targetImgs = null;
 	
 	// ページがロードされたときの処理
 	window.addEventListener("load", function(){
@@ -26,6 +28,10 @@
 		cont = document.getElementById("cont");
 		//読み取り中止ボタンのbutton要素
 		abrt = document.getElementById("abrt");
+		//ドロップ画像の表示領域要素
+		targetImgs = document.getElementById("targetImgs");
+		
+		
 		
 		//dragoverイベントのイベントリスナーをセット
 		dp.addEventListener("dragover", function(evt){
@@ -89,6 +95,8 @@
 				el.setAttribute("type", file.type);
 				el.setAttribute("data", reader.result);
 				cont.appendChild(el);
+				el.setAttribute("height", "150"); // サムネイル表示する画像の高さを150に固定
+				targetImgs.appendChild(el);
 			};
 		}
 		
