@@ -41,7 +41,8 @@
 		//dropイベントのイベントリスナーをセット
 		dp.addEventListener("drop", function(evt){
 			evt.preventDefault();
-			file_droped(evt);
+			//file_droped(evt);
+			fileRead(evt);
 		}, false);
 		
 		//中止ボタンにはclickイベントのイベントリスナーをセット
@@ -58,13 +59,11 @@
 		prog.innerHTML = "";
 		cont.innerHTML = "";
 		//ドロップされたファイルのFileインターフェースオブジェクト
-		var file = evt.dataTransfer.files[0];
-		if(!file){
+		var fileList = evt.dataTransfer.files;
+		if(!fileList){
 			info.innerHTML = "<p>ファイルをドロップしてください</p>";
 			return;
 		}
-		//FileReaderインターフェースオブジェクト
-		reader = new FileReader();
 		
 		
 		//ファイルロードの進捗表示
@@ -82,70 +81,87 @@
 		
 		//プロパティ表示
 		var msg = "";
-		msg += "size: " + file.size + "<br>";
-		msg += "name: " + file.name + "<br>";
-		msg += "type: " + file.type + "<br>";
-		info.innerHTML = msg;
 		
-		//画像ファイル(SVGも含む)の場合
-		if( /^image/.test(file.type)){
-			reader.readAsDataURL(file);
-			reader.onload = function(evt){
-				var el = document.createElement("object");
-				el.setAttribute("type", file.type);
-				el.setAttribute("data", reader.result);
-				cont.appendChild(el);
-				el.setAttribute("height", "150"); // サムネイル表示する画像の高さを150に固定
-				targetImgs.appendChild(el);
-			};
-		}
+		for(var i = 0; i < fileList.length; i++){
+			
+			var file = fileList[i];
+			
+			//FileReaderインターフェースオブジェクト
+			reader = new FileReader();
 		
+			msg += "size: " + fileList[i].size + "<br>";
+			msg += "name: " + fileList[i].name + "<br>";
+			msg += "type: " + fileList[i].type + "<br>";
+			info.innerHTML = msg;
 		
-		
-		// ビデオファイルの場合
-		else if(/^video/.test(file.type)){
-			var el = docutment.createElement("video");
-			if( !/^(maybe|probably)/.test( el.canPlayType(file.type))){
-				return;
+			//画像ファイル(SVGも含む)の場合
+			if( /^image/.test(file.type)){
+				
+				reader.readAsDataURL(file);
+				console.log(file);
+				
+				reader.onload = ( function(theFile){
+						return function(evt){
+						var el = document.createElement("object");	
+						el.setAttribute("type", theFile.type);	
+						el.setAttribute("data", evt.target.result);
+						cont.appendChild(el);				// なぜか効果がなくなったコード
+						el.setAttribute("height", "150"); // サムネイル表示する画像の高さを150に固定
+						targetImgs.appendChild(el);
+						el.setAttribute("height", "150");
+						};
+				});
+
 			}
-			reader.readAsDataURL(file);
-			reader.onload = function(evt){
-				el.setAttribute("type", file.type);
-				el.setAttribute("src", reader.result);
-				el.setAttirbute("controls", true);
-				cont.appendChild(el);
-			};
-		}
-		// テキストファイルの場合
-		else if (/^text/.test(file.type)){
-			reader.readAsText(file);
-			reader.onload = function(evt){
-				cont.appendChild( document.createTextNode(reader.resutl));
-			};
-		}
-		// 上記以外ならば、先頭の40バイト分を16進数表示
-		else{
-			reader.readAsBinaryString(file);
-			reader.onload = function(evt){
-				var str = "";
-				for (var i=0; i< 80; i++){
-					var hex = reader.result.charCodeAt(i).toString(16);
-					if(hex.length < 2){
-						hex = "0" + hex;
-					}
-					str += hex;
-					if((i+1) % 16 == 0){
-						str += "<br>";
-					} else {
-						str += " ";
-					}
+		
+		
+		
+			// ビデオファイルの場合
+			else if(/^video/.test(file.type)){
+				var el = docutment.createElement("video");
+				if( !/^(maybe|probably)/.test( el.canPlayType(fileList[i].type))){
+					return;
 				}
-				cont.appendChild(document.createTextNode(str));
-			};
+				reader.readAsDataURL(file);
+				reader.onload = function(evt){
+					el.setAttribute("type", file.type);
+					el.setAttribute("src", reader.result);
+					el.setAttirbute("controls", true);
+					cont.appendChild(el);
+				};
+			}
+			
+			// テキストファイルの場合
+			else if (/^text/.test(file.type)){
+				reader.readAsText(file);
+				reader.onload = function(evt){
+					cont.appendChild( document.createTextNode(reader.resutl));
+				};
+			}
+			
+			// 上記以外ならば、先頭の40バイト分を16進数表示
+			else{
+				reader.readAsBinaryString(file);
+				reader.onload = function(evt){
+					var str = "";
+					for (var i=0; i< 80; i++){
+						var hex = reader.result.charCodeAt(i).toString(16);
+						if(hex.length < 2){
+							hex = "0" + hex;
+						}
+						str += hex;
+						if((i+1) % 16 == 0){
+							str += "<br>";
+						} else {
+							str += " ";
+						}
+					}
+					cont.appendChild(document.createTextNode(str));
+				};
+			}
 		}
+	
 	}
-	
-	
 	
 	//ファイルのロードを中止
 	function abort(){
@@ -155,4 +171,61 @@
 		reader.abort();
 	}
 
+	
+	
+	// ドロップ時のアクション
+	function fileRead(event)
+	{
+	  preventDefault(event);
+
+	  var files = event.dataTransfer.files;
+	  var objDispArea = document.getElementById("disp_area");
+
+	  objDispArea.innerHTML = '';
+
+	  // ドロップされたファイルの処理
+	  for ( var i = 0; i < files.length; i++ ) {
+
+	    var f = files[i];
+
+	    if ( !f.type.match('image.*') && !f.type.match('text.*') ) {
+	      objDispArea.innerHTML = '【' + f.name + '】 画像かテキストファイルでお試しください。';
+	      return;
+	    }
+
+	    var objFileReader = new FileReader();
+	    objFileReader.onerror = function(evt) {
+	      objDispArea.innerHTML = '【' + f.name + '】 ファイル読み込み時にエラーが発生しました。';
+	      return;
+	    }
+
+	    // 画像の処理
+	    if ( f.type.match('image.*') ) {
+	      objFileReader.onload = ( function(theFile) {
+	        return function(e) {
+	          var span = document.createElement('span');
+	          span.innerHTML = ['<img class="thumb" src="', e.target.result, '" title="', escape(theFile.name), '">'].join('');
+	         document.getElementById('disp_area').insertBefore(span, null);
+	        };
+	      } )(f);
+	      objFileReader.readAsDataURL(f);
+	    }
+
+	    // テキストの処理
+	    if ( f.type.match('text.*') ) {
+	      objFileReader.onload = function(evt) {
+	        objDispArea.innerHTML = objFileReader.result;
+	      }
+	      objFileReader.readAsText(f);
+	    }
+
+	  }
+	}
+	
+	// ブラウザが実装している処理を止める
+	function preventDefault(event)
+	{
+	  event.preventDefault();
+	}
+	
 })();
