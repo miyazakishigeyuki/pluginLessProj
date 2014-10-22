@@ -1,5 +1,6 @@
 /**
  * ドロップされた画像の処理：暫定
+ * (参考1) http://proto.sabi-an.com/18/
  */
 
 (function(){
@@ -30,8 +31,9 @@
 		abrt = document.getElementById("abrt");
 		//ドロップ画像の表示領域要素
 		targetImgs = document.getElementById("targetImgs");
-		
-		
+		//アップロード開始ボタンのbutton要素
+		startUpld = document.getElementById("startUpload");
+//		console.log("console.log" + startUpload);
 		
 		//dragoverイベントのイベントリスナーをセット
 		dp.addEventListener("dragover", function(evt){
@@ -44,6 +46,9 @@
 			//file_droped(evt);
 			fileRead(evt);
 		}, false);
+		
+		//アップロード開始ボタンにはclickイベントのイベントリスナーをセット
+		startUpld.addEventListener("click", startUpload, false);
 		
 		//中止ボタンにはclickイベントのイベントリスナーをセット
 		abrt.addEventListener("click", abort, false);
@@ -166,12 +171,18 @@
 	
 	//ファイルのロードを中止
 	function abort(){
+		alert("ボタンがクリックされました");
 		if(reader == null){
 			result;
 		}
 		reader.abort();
 	}
 
+	//アップロードの開始
+	function startUpload(){
+		alert("ボタンがクリックされました");
+	}
+	
 	
 	
 	// ドロップ時のアクション

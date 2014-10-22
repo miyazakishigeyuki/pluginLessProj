@@ -9,4 +9,12 @@
     <welcome-file>default.htm</welcome-file>
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
+  <servlet>
+  	<servlet-name>acceptImgs</servlet-name>
+  	<servlet-class>acceptImgs.acceptImgs</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>acceptImgs</servlet-name>
+  	<url-pattern>/acceptImgs.acceptImgs</url-pattern>
+  </servlet-mapping>
 </web-app>
