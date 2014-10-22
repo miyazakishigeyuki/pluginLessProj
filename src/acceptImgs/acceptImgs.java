@@ -2,6 +2,7 @@ package acceptImgs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,10 +25,21 @@ public class acceptImgs extends HttpServlet{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public void doGet(HttpServletRequest request,
+			HttpServletResponse response)
+			throws ServletException, IOException{
+			
+		PrintWriter out = response.getWriter();
+		out.println("test");
+		
+	}
+	
+	
 	public void doPost(HttpServletRequest request,
 						HttpServletResponse response)
 						
 		throws ServletException, IOException{
+		
 		
 			DiskFileItemFactory factory = new DiskFileItemFactory();
 			ServletFileUpload sfu = new ServletFileUpload(factory);

@@ -180,10 +180,14 @@
 
 	//アップロードの開始
 	function startUpload(){
-		alert("ボタンがクリックされました");
+		sendData();
 	}
 	
+	// リクエストのボディを格納する文字列
+	var data = "";
 	
+	  // リクエストの各パートを定義するためのセパレータ
+	  var boundary = "blob";
 	
 	// ドロップ時のアクション
 	function fileRead(event)
@@ -195,10 +199,28 @@
 
 	  objDispArea.innerHTML = '';
 
+
+
+
+	  
 	  // ドロップされたファイルの処理
 	  for ( var i = 0; i < files.length; i++ ) {
 
 	    var f = files[i];
+
+	    // リクエストのボディに新たなパートを作成する
+	    data += "--" + boundary +"¥r¥n";
+	    // フォームデータであることを示すヘッダ
+	    data += "content-disposition: form-data; ";
+	    // フォームデータの名前を定義   <-- いったい何に使われる名前だ？
+	    data += 'name="' + f.name + '"; ';
+	    // 実際のファイル名を入力
+	    data += 'filename="' + f.name + '"¥r¥n;';
+	    // ファイルのMIMEタイプを入力
+	    data += 'Content-Type="' + f.type + '"¥r¥n;';
+	    // メタデータとデータの間に空行を入れる
+	    data += "¥r¥n";
+	    
 
 	    if ( !f.type.match('image.*') && !f.type.match('text.*') ) {
 	      objDispArea.innerHTML = '【' + f.name + '】 画像かテキストファイルでお試しください。';
@@ -216,8 +238,17 @@
 	      objFileReader.onload = ( function(theFile) {
 	        return function(e) {
 	          var span = document.createElement('span');
-	          span.innerHTML = ['<img class="thumb" src="', e.target.result, '" title="', escape(theFile.name), '">'].join('');
-	         document.getElementById('disp_area').insertBefore(span, null);
+	          span.innerHTML = ['<img class="thumb" id="thumb" src="', e.target.result, '" title="', escape(theFile.name), '">'].join('');
+	          document.getElementById('disp_area').insertBefore(span, null);
+	          
+	          // マルチパートのデータ部分に画像データをバイナリで読み込む
+	          var objImgDataReader = new FileReader();
+	          
+	          objImgDataReader.readAsBinaryString(theFile);
+	          objImgDataReader.onload = (function(){
+	        	  data += objImgDataReader.result;
+	          });
+	          
 	        };
 	      } )(f);
 	      objFileReader.readAsDataURL(f);
@@ -232,12 +263,48 @@
 	    }
 
 	  }
+	  
+	  // リクエストのボディを閉じる
+	  data += "--" + boundary + "--";
+	  
+	  
+	  
 	}
 	
 	// ブラウザが実装している処理を止める
 	function preventDefault(event)
 	{
 	  event.preventDefault();
+	}
+	
+	function sendData()
+	{
+		alert("ボタンがクリックされました");
+		
+		// マルチパートのフォームデータリクエストを構築するため、
+		// XMLHttpRequest のインスタンスを生成
+		var XHR = new XMLHttpRequest();
+		
+		// データが正常に送信された場合に行うことを定義
+		XHR.addEventListener("load", function(event){
+			alert("Data sent and response loaded.");
+		});
+		
+		// エラーが発生した場合に行うことを定義
+		XHR.addEventListener("error", function(event){
+			alert("Something goes wrong.");
+		});
+		
+		// リクエストをセットアップする
+		XHR.open("post", "http://localhost:8080/pluginLessProj/acceptImgs.acceptImgs");
+		
+		// マルチパートのフォームデータのPOSTリクエストを扱う為に、必要なHTTPヘッダを追加
+		XHR.setRequestHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+		XHR.setRequestHeader("Content-Length", data.length);
+		
+		// 最後にデータを送信する
+		// Firefox のバグに416178により、send()の代わりにsendAsBinary()を使用すること
+		XHR.sendAsBinary(data);
 	}
 	
 })();
