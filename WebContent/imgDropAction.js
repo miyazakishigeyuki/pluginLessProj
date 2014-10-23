@@ -209,17 +209,17 @@
 	    var f = files[i];
 
 	    // リクエストのボディに新たなパートを作成する
-	    data += "--" + boundary +"¥r¥n";
+	    data += "--" + boundary +"\r\n";
 	    // フォームデータであることを示すヘッダ
 	    data += "content-disposition: form-data; ";
 	    // フォームデータの名前を定義   <-- いったい何に使われる名前だ？
 	    data += 'name="' + f.name + '"; ';
 	    // 実際のファイル名を入力
-	    data += 'filename="' + f.name + '"¥r¥n;';
+	    data += 'filename="' + f.name + '"\r\n';
 	    // ファイルのMIMEタイプを入力
-	    data += 'Content-Type="' + f.type + '"¥r¥n;';
+	    data += 'Content-Type:' + f.type + '\r\n';
 	    // メタデータとデータの間に空行を入れる
-	    data += "¥r¥n";
+	    data += '\r\n';
 	    
 
 	    if ( !f.type.match('image.*') && !f.type.match('text.*') ) {
@@ -246,7 +246,10 @@
 	          
 	          objImgDataReader.readAsBinaryString(theFile);
 	          objImgDataReader.onload = (function(){
-	        	  data += objImgDataReader.result;
+	        	  // リクエストのボディにバイナリデータを入れる
+	        	  data += objImgDataReader.result + '\r\n';
+	        	  alert("here!");
+	        	  data += "--" + boundary + "--";	// 仮置
 	          });
 	          
 	        };
@@ -265,7 +268,8 @@
 	  }
 	  
 	  // リクエストのボディを閉じる
-	  data += "--" + boundary + "--";
+	///s  data += "--" + boundary + "--";
+	  alert("here!!!");
 	  
 	  
 	  
