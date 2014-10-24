@@ -252,19 +252,15 @@
 	      objFileReader[i].onload = ( function(theFile) {
 	        return function(e) {
 	        	
-	        	alert("start" + i);
-	        	
 	        	if(!(window.URL)){
 	        		alert("not supported.");
 	        	}
 	        	
 	          var span = document.createElement('span');
 	          var blobURLref = window.URL.createObjectURL(theFile);
-	          // 	          span.innerHTML = ['<img class="thumb" id="thumb" src="', e.target.result, '" title="', escape(theFile.name), '">'].join('');
 	          span.innerHTML = ['<img class="thumb" id="thumb" src="', blobURLref, '" title="', escape(theFile.name), '">'].join('');
 	          document.getElementById('disp_area').insertBefore(span, null);
-	          
-	          
+	         
 		          // リクエストのボディに新たなパートを作成する
 		          data += "--" + boundary +"\r\n";
 		          // フォームデータであることを示すヘッダ
@@ -277,21 +273,14 @@
 		          data += 'Content-Type:' + theFile.type + '\r\n';
 		          // メタデータとデータの間に空行を入れる
 		          data += '\r\n';
-
-		          
-		          
 		          
 		          // マルチパートのデータ部分に画像データをバイナリで読み込む
 		          // リクエストのボディにバイナリデータを入れ
-		     //     data += objFileReader[i].result + '\r\n';
-		     //     tmp = objFileReader[i].result;
 		          data += e.target.result + '\r\n';
 		          tmp = e.target.result;
 		          alert(i);
 		          alert(tmp);
 		          flagFin[i] = 1;
-	          
-
 	        };	
 	      } )(f);
 	      
