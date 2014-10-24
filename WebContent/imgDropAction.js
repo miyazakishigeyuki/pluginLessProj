@@ -17,6 +17,12 @@
 	// ドロップ画像の表示領域要素
 	var targetImgs = null;
 	
+	// リクエストのボディを格納する文字列
+	var data = "";
+	// リクエストの各パートを定義するためのセパレータ
+	var boundary = "blob";
+	  
+	
 	// ページがロードされたときの処理
 	window.addEventListener("load", function(){
 		//ドロップ領域のdiv要素
@@ -33,7 +39,8 @@
 		targetImgs = document.getElementById("targetImgs");
 		//アップロード開始ボタンのbutton要素
 		startUpld = document.getElementById("startUpload");
-//		console.log("console.log" + startUpload);
+		
+
 		
 		//dragoverイベントのイベントリスナーをセット
 		dp.addEventListener("dragover", function(evt){
@@ -44,6 +51,8 @@
 		dp.addEventListener("drop", function(evt){
 			evt.preventDefault();
 			//file_droped(evt);
+			// リクエストのボディを初期化
+			data = "";
 			fileRead(evt);
 		}, false);
 		
@@ -183,11 +192,7 @@
 		sendData();
 	}
 	
-	// リクエストのボディを格納する文字列
-	var data = "";
-	
-	  // リクエストの各パートを定義するためのセパレータ
-	  var boundary = "blob";
+
 	
 	// ドロップ時のアクション
 	function fileRead(event)
@@ -199,15 +204,23 @@
 
 	  objDispArea.innerHTML = '';
 
+	  var objFileReader = new Array(files.length);
+	  var flagFin = new Array(files.length);
+	  
 
-
-
+	  
 	  
 	  // ドロップされたファイルの処理
 	  for ( var i = 0; i < files.length; i++ ) {
 
-	    var f = files[i];
+	
 
+		  
+		  
+	    var f = files[i];
+	    flagFin[i] = 0;
+
+	    /*
 	    // リクエストのボディに新たなパートを作成する
 	    data += "--" + boundary +"\r\n";
 	    // フォームデータであることを示すヘッダ
@@ -220,59 +233,80 @@
 	    data += 'Content-Type:' + f.type + '\r\n';
 	    // メタデータとデータの間に空行を入れる
 	    data += '\r\n';
-	    
+*/	    
 
 	    if ( !f.type.match('image.*') && !f.type.match('text.*') ) {
 	      objDispArea.innerHTML = '【' + f.name + '】 画像かテキストファイルでお試しください。';
 	      return;
 	    }
 
-	    var objFileReader = new FileReader();
-	    objFileReader.onerror = function(evt) {
+	    //var objFileReader = new FileReader();
+	    objFileReader[i] = new FileReader();
+	    objFileReader[i].onerror = function(evt) {
 	      objDispArea.innerHTML = '【' + f.name + '】 ファイル読み込み時にエラーが発生しました。';
 	      return;
 	    }
 
 	    // 画像の処理
 	    if ( f.type.match('image.*') ) {
-	      objFileReader.onload = ( function(theFile) {
+	      objFileReader[i].onload = ( function(theFile) {
 	        return function(e) {
+	        	
+	        	alert("start" + i);
+	        	
+	        	if(!(window.URL)){
+	        		alert("not supported.");
+	        	}
+	        	
 	          var span = document.createElement('span');
-	          span.innerHTML = ['<img class="thumb" id="thumb" src="', e.target.result, '" title="', escape(theFile.name), '">'].join('');
+	          var blobURLref = window.URL.createObjectURL(theFile);
+	          // 	          span.innerHTML = ['<img class="thumb" id="thumb" src="', e.target.result, '" title="', escape(theFile.name), '">'].join('');
+	          span.innerHTML = ['<img class="thumb" id="thumb" src="', blobURLref, '" title="', escape(theFile.name), '">'].join('');
 	          document.getElementById('disp_area').insertBefore(span, null);
 	          
-	          // マルチパートのデータ部分に画像データをバイナリで読み込む
-	          var objImgDataReader = new FileReader();
 	          
-	          objImgDataReader.readAsBinaryString(theFile);
-	          objImgDataReader.onload = (function(){
-	        	  // リクエストのボディにバイナリデータを入れる
-	        	  data += objImgDataReader.result + '\r\n';
-	        	  alert("here!");
-	        	  data += "--" + boundary + "--";	// 仮置
-	          });
+		          // リクエストのボディに新たなパートを作成する
+		          data += "--" + boundary +"\r\n";
+		          // フォームデータであることを示すヘッダ
+		          data += "content-disposition: form-data; ";
+		          // フォームデータの名前を定義   <-- いったい何に使われる名前だ？
+		          data += 'name="' + theFile.name + '"; ';
+		          // 実際のファイル名を入力
+		          data += 'filename="' + theFile.name + '"\r\n';
+		          // ファイルのMIMEタイプを入力
+		          data += 'Content-Type:' + theFile.type + '\r\n';
+		          // メタデータとデータの間に空行を入れる
+		          data += '\r\n';
+
+		          
+		          
+		          
+		          // マルチパートのデータ部分に画像データをバイナリで読み込む
+		          // リクエストのボディにバイナリデータを入れ
+		     //     data += objFileReader[i].result + '\r\n';
+		     //     tmp = objFileReader[i].result;
+		          data += e.target.result + '\r\n';
+		          tmp = e.target.result;
+		          alert(i);
+		          alert(tmp);
+		          flagFin[i] = 1;
 	          
-	        };
+
+	        };	
 	      } )(f);
-	      objFileReader.readAsDataURL(f);
+	      
+	      // サーバにデータを送信するためにURI の取得ではなく、最初からデータを取得する
+	      objFileReader[i].readAsBinaryString(f);
 	    }
 
 	    // テキストの処理
 	    if ( f.type.match('text.*') ) {
-	      objFileReader.onload = function(evt) {
-	        objDispArea.innerHTML = objFileReader.result;
+	      objFileReader[i].onload = function(evt) {
+	        objDispArea.innerHTML = objFileReader[i].result;
 	      }
-	      objFileReader.readAsText(f);
-	    }
-
+	      objFileReader[i].readAsText(f);
+	    }  
 	  }
-	  
-	  // リクエストのボディを閉じる
-	///s  data += "--" + boundary + "--";
-	  alert("here!!!");
-	  
-	  
-	  
 	}
 	
 	// ブラウザが実装している処理を止める
@@ -283,7 +317,8 @@
 	
 	function sendData()
 	{
-		alert("ボタンがクリックされました");
+		// リクエストのボディを閉じる
+        data += "--" + boundary + "--";
 		
 		// マルチパートのフォームデータリクエストを構築するため、
 		// XMLHttpRequest のインスタンスを生成
