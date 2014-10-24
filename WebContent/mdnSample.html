@@ -145,9 +145,29 @@ startUpld.addEventListener("click", sendFiles, false);
 			  
 				// リクエストの各パートを定義するためのセパレータ
 				var boundary = "blob";
-			  
+		
+				//--- 以下がアルバム情報
+				
+		          // リクエストのボディに新たなパートを作成する
+		          var data = "--" + boundary +"\r\n";
+		          // フォームデータであることを示すヘッダ
+		          data += "content-disposition: form-data; ";
+		          // フォームデータの名前を定義   <-- いったい何に使われる名前だ？
+		          data += 'name="upload.info"; ';
+		          // 実際のファイル名を入力
+		          data += 'filename="uploadinfo.xml"\r\n';
+		          // ファイルのMIMEタイプを入力
+		          data += 'Content-Type:text/plain\r\n';
+		          // メタデータとデータの間に空行を入れる
+		          data += '\r\n';
+		          
+		          // アップロード情報の中身を追加
+		          data += '<uploadinf id="miyazaki" ps="miyazaki" albumId="0000" uploadId="9999" />' + "\r\n"
+				
+		          //--- 以上が、アルバム情報。以下は、画像データ
+				
 	          // リクエストのボディに新たなパートを作成する
-	          var data = "--" + boundary +"\r\n";
+	          data += "--" + boundary +"\r\n";
 	          // フォームデータであることを示すヘッダ
 	          data += "content-disposition: form-data; ";
 	          // フォームデータの名前を定義   <-- いったい何に使われる名前だ？
@@ -166,7 +186,7 @@ startUpld.addEventListener("click", sendFiles, false);
 	  		// リクエストのボディを閉じる
 	          data += "--" + boundary + "--";
 			  
-			  
+			  // これは不要
 //		    xhr.send(evt.target.result);
 			
 
@@ -178,7 +198,8 @@ startUpld.addEventListener("click", sendFiles, false);
 			// 最後にデータを送信する
 			// Firefox のバグに416178により、send()の代わりにsendAsBinary()を使用すること
 			xhr.sendAsBinary(data);
-		  };
+			//xhr.send(file);
+			};
 		  reader.readAsBinaryString(file);
 		}
 	

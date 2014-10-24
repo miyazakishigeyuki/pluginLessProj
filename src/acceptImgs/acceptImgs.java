@@ -39,7 +39,7 @@ public class acceptImgs extends HttpServlet{
 						HttpServletResponse response)
 						
 		throws ServletException, IOException{
-		
+	
 		
 			DiskFileItemFactory factory = new DiskFileItemFactory();
 			ServletFileUpload sfu = new ServletFileUpload(factory);
